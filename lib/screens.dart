@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'theme.dart';
+
+const telegramUrl = 'https://t.me/forgeXplatform';
+Future<void> openTelegram() =>
+    launchUrl(Uri.parse(telegramUrl), mode: LaunchMode.externalApplication);
 
 String today() {
   final d = DateTime.now();
@@ -56,6 +61,7 @@ class Onboarding extends StatefulWidget {
 
 class _OnboardingState extends State<Onboarding> {
   final c = TextEditingController();
+  int step = 0;
   Future<void> go() async {
     final p = await SharedPreferences.getInstance();
     await p.setString('name', c.text.trim());
@@ -71,23 +77,36 @@ class _OnboardingState extends State<Onboarding> {
             padding: const EdgeInsets.all(24),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               const Spacer(),
-              Center(
-                  child: ClipRRect(
-                      borderRadius: BorderRadius.circular(28),
-                      child: Image.asset('assets/logo.jpg', width: 200, semanticLabel: 'ForgeX logo'))),
+              Center(child: Image.asset('assets/icon.png', width: 180, semanticLabel: 'ForgeX logo')),
               const Spacer(),
-              Text('Join the forge.', style: Theme.of(context).textTheme.headlineMedium),
-              const SizedBox(height: 8),
-              const Text('Be part of the community. Complete quests, gain XP, level up and unlock perks.',
-                  style: TextStyle(color: FX.muted, fontSize: 16)),
-              const SizedBox(height: 20),
-              TextField(
-                  controller: c,
-                  onChanged: (_) => setState(() {}),
-                  decoration: const InputDecoration(labelText: 'Your name')),
-              const SizedBox(height: 16),
-              SizedBox(width: double.infinity,
-                  child: GradButton('Join', onTap: c.text.trim().isEmpty ? null : go)),
+              if (step == 0) ...[
+                Text('Join the forge.', style: Theme.of(context).textTheme.headlineMedium),
+                const SizedBox(height: 8),
+                const Text('Be part of the community. Complete quests, gain XP, level up and unlock perks.',
+                    style: TextStyle(color: FX.muted, fontSize: 16)),
+                const SizedBox(height: 20),
+                TextField(
+                    controller: c,
+                    onChanged: (_) => setState(() {}),
+                    decoration: const InputDecoration(labelText: 'Your name')),
+                const SizedBox(height: 16),
+                SizedBox(width: double.infinity,
+                    child: GradButton('Continue',
+                        onTap: c.text.trim().isEmpty ? null : () => setState(() => step = 1))),
+              ] else ...[
+                Text('Join our Telegram', style: Theme.of(context).textTheme.headlineMedium),
+                const SizedBox(height: 8),
+                const Text('Updates, drops and the community live there.',
+                    style: TextStyle(color: FX.muted, fontSize: 16)),
+                const SizedBox(height: 20),
+                SizedBox(width: double.infinity,
+                    child: GradButton('Join Telegram', icon: Icons.send_rounded, onTap: openTelegram)),
+                const SizedBox(height: 8),
+                SizedBox(width: double.infinity,
+                    child: TextButton(onPressed: go,
+                        child: const Text('Continue to ForgeX',
+                            style: TextStyle(color: FX.amber, fontSize: 16)))),
+              ],
             ]),
           ),
         ),
@@ -164,11 +183,15 @@ class _ShellState extends State<Shell> {
         titleSpacing: 16,
         title: Row(children: [
           ClipRRect(borderRadius: BorderRadius.circular(8),
-              child: Image.asset('assets/logo.jpg', width: 32, height: 32, fit: BoxFit.cover)),
+              child: Image.asset('assets/icon.png', width: 32, height: 32, fit: BoxFit.cover)),
           const SizedBox(width: 10),
           Text('ForgeX', style: Theme.of(context).textTheme.titleLarge),
         ]),
         actions: [
+          IconButton(
+              tooltip: 'Telegram community',
+              onPressed: openTelegram,
+              icon: const Icon(Icons.send_rounded, color: FX.orange)),
           Container(
             margin: const EdgeInsets.only(right: 16),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -362,6 +385,8 @@ class Me extends StatelessWidget {
               backgroundColor: FX.surface2, color: FX.orange)),
       const SizedBox(height: 6),
       Center(child: Text('${100 - xp % 100} XP to level ${lv + 1}', style: const TextStyle(color: FX.muted))),
+      const SizedBox(height: 20),
+      GradButton('Join our Telegram', icon: Icons.send_rounded, onTap: openTelegram),
       const SizedBox(height: 24),
       Text('Perks', style: Theme.of(context).textTheme.titleLarge),
       const SizedBox(height: 12),
